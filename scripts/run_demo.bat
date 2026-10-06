@@ -16,7 +16,7 @@ if not exist "%CANON%\acceptance_check.py" (
   echo [错误] 找不到验收脚本主本：
   echo        %CANON%\acceptance_check.py
   echo.
-  echo        请确认科研空间仍在 C:\Users\wshix\WorkBuddy\EEG
+  echo        请确认科研空间仍在 D:\Notes\EEG\EEG
   echo        如果它已经被移动，请用记事本打开本文件，
   echo        把第 12 行 set "CANON=..." 改成新的 scripts 目录，再双击重试。
   echo.

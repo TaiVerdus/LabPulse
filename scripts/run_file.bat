@@ -30,7 +30,7 @@ if not exist "%CANON%\acceptance_check.py" (
   echo.
   echo [错误] 找不到验收脚本主本：
   echo        %CANON%\acceptance_check.py
-  echo        请确认科研空间仍在 C:\Users\wshix\WorkBuddy\EEG
+  echo        请确认科研空间仍在 D:\Notes\EEG\EEG
   pause
   exit /b 1
 )

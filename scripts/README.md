@@ -2,14 +2,14 @@
 
 > **本目录不含脚本主本。** 验收算法内核 `acceptance_check.py` 的 canonical 在科研空间：
 > 相对路径 `..\EEG\scripts\acceptance_check.py`
-> 绝对路径 `C:\Users\wshix\WorkBuddy\EEG\scripts\acceptance_check.py`
+> 绝对路径 `D:\Notes\EEG\EEG\scripts\acceptance_check.py`
 >
-> 契约全文见 `C:\Users\wshix\WorkBuddy\EEG\SHARED_DEPS.md`。
+> 契约全文见 `D:\Notes\EEG\EEG\SHARED_DEPS.md`。
 
 ## 这里的三个 .bat 是什么
 
 它们是**启动器副本**，不是脚本本体。双击后会自动定位到科研空间的脚本主本并执行，
-所以你不需要关心文件在哪台目录里——只要科研空间还在 `C:\Users\wshix\WorkBuddy\EEG`，
+所以你不需要关心文件在哪台目录里——只要科研空间还在 `D:\Notes\EEG\EEG`，
 双击就能跑。
 
 | 文件 | 作用 | 什么时候用 |
@@ -22,6 +22,6 @@
 
 - 双击即可，不需要懂命令行
 - 如果看到「找不到验收脚本主本」的提示：说明科研空间被移动了，
-  用记事本打开对应的 `.bat`，改第 6 行 `set "CANON=..."` 指向新的 scripts 目录
+  用记事本打开对应的 `.bat`，把 `set "CANON=%HERE%..\..\EEG\scripts"` 那一行改到新的 scripts 目录
 - **不要**往这里复制 `acceptance_check.py`，也不要在这里改算法——
   算法只有一个主本，在科研空间
