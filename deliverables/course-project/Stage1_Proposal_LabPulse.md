@@ -1,290 +1,187 @@
-# LabPulse — Detecting Operator State Anomalies in Wet-Lab Work
+# LabPulse —— 湿实验操作者「状态异常」识别
 
-**Stage 1 Project Proposal**
+**Stage 1 项目提案**
 
 | | |
 |---|---|
-| **Course** | 44511105 Project-Based CST&AI Foundations (Fall 2026) — Projects module |
-| **Author** | Shixian Wang |
-| **Stage** | Stage 1 — Milestone submission |
-| **Date** | 2026-10-13 |
-| **Team** | Individual project (solo) |
-| **Repository** | `<Git URL>` |
+| **课程** | 44511105 Project-Based CST&AI Foundations（2026 秋）—— Projects 模块 |
+| **作者** | 王释贤 |
+| **阶段** | Stage 1 —— 里程碑提交 |
+| **日期** | 2026-10-13 |
+| **团队** | 个人项目（solo） |
+| **仓库** | https://github.com/TaiVerdus/LabPulse |
 
 ---
 
-## 1. The Problem
+## 一、问题
 
-Quality control in wet-lab work is **entirely retrospective**. A miscalculated dilution
-factor or a mislabelled tube is usually discovered downstream — hours later, or never.
-By the time the failure surfaces, the cause is unrecoverable: nobody knows which step
-went wrong, let alone why.
+湿实验的质量保障**完全是事后发现**。稀释倍数算错、离心管标错，通常要到下游才暴露——几小时之后，或者永远不暴露。等失效显形时，原因已经不可恢复：没人知道是哪一步出的问题，更不知道为什么会出。
 
-Three things are missing from the current workflow:
+现在的流程缺三样东西：
 
-1. **Errors are found too late.** By the time a batch fails, the responsible step is
-   buried in a two-hour timeline with no markers.
-2. **The operator's state is never recorded.** Human-factors research treats cognitive
-   overload and attention decline as the main error sources in procedural work, yet in a
-   real lab the operator's state is captured by nothing. The only two existing tools are
-   self-report (unreliable, and it interrupts the work) and video review (accurate, but
-   nobody re-watches two hours of footage to find a five-second mistake).
-3. **The state that matters has no single measurement.** Cognitive load and attention
-   decline have no threshold and no gold standard — and asking an operator to report them
-   breaks their flow. (Muscle fatigue is the exception: it *does* admit a measurable
-   marker, which is exactly why this project anchors on it — see §2.)
+1. **错误发现得太晚。** 一批样品报废时，真正出问题的那一步已经埋在两小时的时间线里，没有任何标记。
+2. **操作者的状态从未被记录。** 人因研究普遍把认知过载和注意力衰退当作流程性作业的主要错误来源，但在真实实验室里，操作者的状态**没有任何东西在记录**。现成的两个手段都不好使：自陈（不准，而且一打断就把手上的活毁了）；录像回看（准，但没人会为了找五秒钟的失误去回看两小时素材）。
+3. **真正重要的那个状态没有单一测量。** 认知负荷和注意力衰退既没有阈值，也没有金标准；而让操作者自己报告，会直接破坏他的作业节奏。（肌肉疲劳是例外——它**确实**有可测的标记，这正是本项目把它作为主锚点的原因，见第二节。）
 
-The practical consequence: an operator who is heading toward an error gets no signal
-until the error has already happened.
+实际后果：一个正在走向失误的操作者，在失误真正发生之前，收不到任何信号。
 
-## 2. Research Direction
+## 二、研究方向
 
-**LabPulse is a mirror, not a judge.** The system does not decide for the operator whether
-they are fit to continue. It shows the operator their own signal against their own
-baseline, and the operator decides. The premise of the whole project is this line:
-*we can hardly define "tired", but we can help someone notice that they are tired.*
+**LabPulse 是一面镜子，不是一个判官。** 系统不替操作者判断他还能不能继续。它把操作者自己的信号、对着他自己的基线摆出来看，判断权在操作者手里。整件事的前提就是这句话：*我们很难定义「累不累」，但可以帮一个人意识到自己累了。*
 
-We therefore do not attempt to define or measure "tiredness" as a single construct. We
-treat the operator's own baseline as the reference and ask a narrower, answerable question:
+所以我们不去定义、也不去测量「疲劳」这个复合概念。我们拿操作者**自己的基线**当参照，只问一个更窄、也答得出来的问题：
 
-> **Can a deviation from an operator's own physiological baseline — a *state anomaly* —
-> be detected while they are still working, and located on the SOP timeline?**
+> **一个人的生理指标相对他自己基线的偏离——也就是「状态异常」——能不能在他还在工作时就被识别出来，并且定位到 SOP 的某一步？**
 
-**Two complementary channels, deliberately asymmetric.** Each is validated against a
-different control (§4), so neither is left to be judged against nothing:
+**两条互补通道，而且刻意不对称。** 每条通道各自绑一个对照来验证（见第四节），谁也不至于无凭无据：
 
-| Channel | Target | Strength | Role |
+| 通道 | 测什么 | 强在哪 | 角色 |
 |---|---|---|---|
-| **EMG** (surface) | Action execution + **muscle fatigue** | Muscle fatigue has a textbook marker: surface-EMG **median frequency (MDF) declines** with sustained contraction. Measurable, repeatable, and visible as a trend **within a single subject** — no gold-standard-free guessing. | **Primary** |
-| **EEG** | Cognitive load / attention | Strong at "something changed", weak at naming it: heavy artefact load, no gold standard for "cognitive load", and single-subject cognitive-state inference has no established solution. | **Complementary** |
+| **肌电 EMG**（表面） | 动作执行 + **肌肉疲劳** | 肌肉疲劳有教科书级标记：表面肌电**中值频率（MDF）随持续收缩而下降**。可测、可重复，而且**在单个受试者身上就能看出趋势**——不需要靠着「没有金标准」去猜。 | **主** |
+| **脑电 EEG** | 认知负荷 / 注意 | 强在「有变化了」，弱在「是什么」：伪迹重；「认知负荷」没有金标准；单受试者的认知状态推断没有成熟解法。 | **辅** |
 
-This split is the single biggest design upgrade. Cognitive state is the target we care
-about, but it is not the target we can *validate*; muscle fatigue is narrower, yet it is
-measurable. We therefore anchor the primary objective on the channel that admits a
-literature-backed marker, and carry EEG as a complementary channel reported honestly as
-exploratory.
+这个分工是本次最大的设计升级。认知状态是我们在乎的目标，但它不是我们**验证得了**的目标；肌肉疲劳窄一些，但它测得住。所以主目标锚在**有文献标记**的那条通道上，脑电作为辅助通道，如实按「探索性」报告。
 
-**SOP as the skeleton.** Rather than inferring the timeline from the signal, the SOP step
-list supplies it: every signal window is attached to a known step ("dilution, step 3"). The
-detector's output is therefore not an abstract "abnormal segment" but a **named,
-interpretable statement — "dilution SOP step 3 deviated"** — which is what makes the
-problem tractable and the result explainable to the operator.
+**SOP 定骨架。** 不去从信号里反推时间线，而是让 SOP 步骤表直接提供时间线：每一个信号窗口都挂在已知的一步上（「稀释，第 3 步」）。于是检测器的输出不是抽象的「一段异常」，而是一句**有名字、看得懂的话——「稀释 SOP 第 3 步偏离了」**。这才是这个问题可解、结果也能向操作者解释的原因。
 
-**Primary objective**
-Detect state anomalies within subject, against each operator's own baseline, and locate
-them on the SOP timeline.
+**主目标**
+被试内识别状态异常：对每个人自己的基线比较，并定位到 SOP 时间线上。
 
-**Secondary objective (exploratory only)**
-Observe cases in which a detected anomaly was followed by a recorded operational error.
-Because spontaneous errors are rare, this is **hypothesis-generating observation, not a
-tested causal claim** — see §6.
+**次级目标（仅探索性）**
+观察那些「检出异常之后跟着发生了一次可记录的操作失误」的案例。因为自发错误很少，这部分只能是**产生假设的观察，不是被检验的因果结论**——见第六节。
 
-**An operational definition of "state anomaly"** (fixed before data collection, so the
-detector can be judged):
+**「状态异常」的操作定义**（在采集开始前定死，检测器才可被评判）：
 
-> A state anomaly is a period in which a channel's indicator departs from the operator's
-> own quiet-operation baseline by more than **X standard deviations**, and stays there for
-> at least **Y seconds**.
+> 状态异常：某条通道的指标，相对该操作者**安静作业基线**偏离超过 **X 个标准差**，并持续至少 **Y 秒**。
 >
-> - **EMG indicator** (primary): median frequency (MDF) and amplitude (RMS) of the muscle
->   group active in the task.
-> - **EEG indicator** (complementary): band-power ratios against that operator's own
->   baseline. Reported separately — **never merged into one score with EMG**, because the
->   two have different time constants and different evidence strength.
+> - **肌电指标**（主）：任务所动用肌群的**中值频率（MDF）**与**幅值（RMS）**。
+> - **脑电指标**（辅）：相对该操作者自己基线的频段功率比。**单独报告，绝不与肌电融合成一个分数**——两者时间常数不同，证据强度也不同。
 >
-> *X and Y are fixed per channel after the first two baseline sessions are analysed, then
-> frozen for the rest of the study. The sustained-duration rule keeps a single blink or
-> movement artefact from raising an alarm.*
+> *X 与 Y 按通道在头两次基线 session 分析后定下，此后全程冻结。要求「持续」是为了不让一次眨眼或一个动作伪迹就报警。*
 
-## 3. What We Build: LabPulse
+## 三、我们要做的东西：LabPulse
 
-LabPulse is a desktop web application (Python + Streamlit, runs locally, no cloud, no
-account) whose job is to make the study above possible. Five modules:
+LabPulse 是一个桌面 Web 应用（Python + Streamlit，本地运行，不上云，不要账号），存在的意义就是让上面这个研究做得成。五个模块：
 
-| # | Module | What it does |
+| # | 模块 | 做什么 |
 |---|---|---|
-| 1 | **Acquisition** | Receives live EEG and surface EMG from the laboratory's acquisition system and timestamps every sample against a single clock. |
-| 2 | **SOP Timeline** | Records the procedure against the task's SOP step list. This step list is the **skeleton of the whole system** — it is what turns a signal into a *located* result. Step lists are **configuration files**, one per task (weighing / dilution / sampling), so the same code serves all three tasks. |
-| 3 | **Event Marking** | One-click / hotkey marking during work ("step complete", "error noticed", free labels). Both hands are occupied during dilution; anything that requires typing will simply not happen. |
-| 4 | **State Anomaly Detection** | Computes both channels' indicators (EMG MDF/RMS primary, EEG band ratios complementary), compares each against the operator's own baseline, and flags sustained deviations using the frozen X / Y rule — **attributed to a named SOP step**. |
-| 5 | **Synchronised Review & Export** | SOP step timeline × physiological curves on one chart; click any mark to jump to the signal around it; export a structured session log as CSV. |
+| 1 | **采集** | 从实验室采集设备接收实时脑电与表面肌电，所有采样对齐到同一个时钟打时间戳。 |
+| 2 | **SOP 时间线** | 按任务的 SOP 步骤表记录流程。这张步骤表是**整个系统的骨架**——是它把一段信号变成「有位置的结果」。步骤表用**配置文件**，每个任务一份（称量 / 稀释 / 采样），同一套代码服务三个任务。 |
+| 3 | **事件标记** | 作业中一键 / 热键打标（「本步完成」、「发现失误」、自由标签）。稀释时双手都占着，任何需要打字的交互事实上不会发生。 |
+| 4 | **状态异常检测** | 计算两条通道的指标（肌电 MDF/RMS 为主，脑电频段功率比为辅），各自与操作者本人基线比较，按冻结的 X / Y 规则标记持续偏离，并**归因到具体的 SOP 步骤**。 |
+| 5 | **同步回看与导出** | SOP 步骤时间线 × 生理曲线同图；点任一标记就跳到对应信号区间；会话记录导出为结构化 CSV。 |
 
-The signal-quality check reuses the analysis core already written and validated during
-equipment acceptance, rather than re-implementing it (modularity & reuse).
+信号质量检查复用设备验收阶段已写好并验证过的分析内核，不重写（模块化与复用）。
 
-**Alignment requirement.** The SOP timeline is human-marked (minutes) while the
-physiological signal is continuous (milliseconds). Both must be stamped against the same
-clock; mark-to-signal alignment error must stay **under 1 second**, or the two streams
-cannot be correlated afterwards.
+**对齐要求。** SOP 时间线由人打点（分钟量级），生理信号是连续的（毫秒量级）。两者必须打在同一时钟上；**标记到信号的错位必须小于 1 秒**，否则事后两条流根本对不上。
 
-## 4. Study Design
+## 四、研究设计
 
-**Participants and tasks — fixed assignment.**
+**参与者与任务——固定分配。**
 
-| Operator | Task | Time slot |
+| 操作者 | 任务 | 时段 |
 |---|---|---|
-| Operator A | Weighing | separate |
-| Operator B (author) | Dilution | separate |
-| Operator C | Sampling | separate |
+| 操作者 A | 称量 | 各自独立时段 |
+| 操作者 B（本人） | 稀释 | 各自独立时段 |
+| 操作者 C | 采样 | 各自独立时段 |
 
-Each operator performs **only their own task**; there is no crossover. This means person
-and task are not separable, so **no comparison between operators or between tasks will be
-claimed** (see §6). Each operator is analysed as an independent within-subject case:
-three separate small experiments, each with its own baseline.
+每人**只做自己那一项任务**，不交叉。这意味着人与任务无法分离，因此**不做任何跨人或跨任务的比较**（见第六节）。每个人当作一个独立的被试内案例来分析：三个各自独立的小实验，各自带自己的基线。
 
-**Each channel gets its own positive control.**
+**每条通道各有一个阳性对照。**
 
-**Control 1 — white noise → validates the EEG (cognitive-load) channel.**
-White noise is switched on for a fixed block: it adds exogenous load, requires no change to
-the task, and is reproducible. If the EEG channel cannot separate quiet from noise-loaded
-blocks *within the same operator*, it is not measuring anything usable. Fixed noise source,
-fixed volume, same hardware every session. (Music was rejected: its rhythm enters the EEG
-spectrum and contaminates the very band being measured.)
+**对照 1 —— 白噪声 → 验证脑电（认知负荷）通道。**
+白噪声在固定区段打开：它叠加外源负荷，不改变任务本身，且可复现。如果脑电通道**在同一个操作者身上**都分不出安静段和噪声段，那它就没在测量任何可用的东西。噪声源固定、音量固定、每次 session 用同一套硬件。（否掉音乐：音乐节奏会进入脑电频谱，污染正要测的那个频段。）
 
-**Control 2 — within-session time-on-task → validates the EMG (muscle-fatigue) channel.**
-Sessions are a fixed 90 minutes; the first 30 minutes and the last 30 minutes are compared
-within the same session, and sustained work should lower MDF. This is the **validation
-condition for the primary channel**, and it costs no extra session — the load is produced
-by the real work itself.
+**对照 2 —— session 内时间负荷 → 验证肌电（肌肉疲劳）通道。**
+session 固定 90 分钟；比较同一 session 的**前 30 分钟与后 30 分钟**，持续作业应当让 MDF 下降。这是**主通道的验证条件**，而且不额外花 session——负荷由真实工作本身产生。
 
-**Calibration (optional, ~1 minute per session).** A brief sustained isometric hold
-(20–30 s at a self-chosen level, held as steadily as possible) recorded at the start and
-the end of each session gives a same-session, task-independent reference for MDF decline.
-It is a *relative* before/after contrast, not an absolute force measurement. Whether it is
-needed is decided after the baseline sessions — see the risk table in §8.
+**校准（可选，每次 session 约 1 分钟）。** 在 session 首尾各录一次简短等长持续收缩（20–30 秒，自选力度、尽量稳住），作为同一 session 内、与任务无关的 MDF 下降参照。它是**相对**的前后对比，不是绝对力值测量。要不要做，等基线 session 出来再定——见第八节风险表。
 
-**Protocol and data volume.**
+**协议与数据量。**
 
-| Phase | Sessions per operator | Total | Calendar |
+| 阶段 | 每人 session 数 | 合计 | 日历 |
 |---|---|---|---|
-| Quiet baseline | 2 | 6 | 2 weeks |
-| White-noise block | 2 | 6 | 2 weeks |
-| **Total** | **4** | **12 sessions** | **4 weeks** |
+| 安静基线 | 2 | 6 | 2 周 |
+| 白噪声段 | 2 | 6 | 2 周 |
+| **合计** | **4** | **12 次 session** | **4 周** |
 
-Each session is 1–2 hours and is part of the operators' existing weekly laboratory
-schedule — no additional sessions have to be created for this study.
-Estimated yield: ~18 hours of recording ≈ **~2000 non-overlapping 30-second windows**,
-with each operator carrying their own baseline. Adjacent windows are strongly correlated,
-so the effective independent sample is much smaller; the binding constraint is the number
-of **sessions**, not windows.
+每次 session 1–2 小时，直接嵌入三位操作者**既有的每周实验日程**——不需要为本研究额外造 session。
+预计产出：约 18 小时记录 ≈ **约 2000 个不重叠的 30 秒窗口**，每人自带基线。相邻窗口强相关，有效独立样本远小于这个数；真正的瓶颈是 **session 次数**，不是窗口数。
 
-**Secondary (exploratory) analysis.** Operational errors are recorded as they are noticed
-during work, or back-filled afterwards from a downstream result. With spontaneous error
-rates around 1–2 per session, the study yields a few dozen events at most. This is far
-below what a state↔error association test requires, so the secondary analysis is reported
-as a set of documented cases, never as a correlation or a causal result.
+**次级（探索性）分析。** 操作失误在作业中当场记录，或事后由下游结果回填。自发错误率约每次 session 1–2 次，整个研究最多也就几十个事件。这远低于做「状态↔错误」关联检验所需，因此次级分析只作为**案例集**报告，绝不写成相关性或因果结论。
 
-## 5. Success Criteria
+## 五、成功标准
 
-| # | Criterion | Target | Verified at |
+| # | 标准 | 目标 | 验证时间 |
 |---|---|---|---|
-| S1 | Two baseline sessions per operator completed and analysed | 3/3 operators | Week 2 |
-| S2 | X / Y thresholds fixed **per channel** and documented before the noise block | frozen, written down | Week 2 |
-| S3 | **EEG channel**: white-noise blocks show a detectable shift versus that operator's own quiet baseline | 3/3 operators | Week 4 |
-| S4 | **EMG channel (primary)**: within-session MDF trend, first 30 min vs last 30 min | computed for 12/12 sessions; decline visible in ≥2/3 operators — otherwise the §4 calibration fallback is activated, and a null result is reported as a null result | Week 4 |
-| S5 | SOP mark aligns to the signal timeline | error < 1 s | Week 1 |
-| S6 | A full session (acquire → mark → review → export) runs unassisted | 1 operator, no help | Week 4 |
-| S7 | End-to-end live demonstration completes in under 3 minutes | pass | Demo Day |
+| S1 | 每位操作者两次基线 session 完成并分析 | 3/3 人 | 第 2 周 |
+| S2 | X / Y 阈值**按通道**定下并记录在案（在白噪声段之前） | 冻结、成文 | 第 2 周 |
+| S3 | **脑电通道**：白噪声段相对该操作者安静基线出现可检出的偏移 | 3/3 人 | 第 4 周 |
+| S4 | **肌电通道（主）**：session 内 MDF 趋势，前 30 分钟 vs 后 30 分钟 | 12/12 次 session 算出；≥2/3 人出现下降——否则启用第四节校准备选，并把阴性结果如实报为阴性 | 第 4 周 |
+| S5 | SOP 标记与信号时间线对齐 | 错位 < 1 秒 | 第 1 周 |
+| S6 | 一次完整 session（采集 → 打标 → 回看 → 导出）无需他人协助跑通 | 1 位操作者独立完成 | 第 4 周 |
+| S7 | 端到端现场演示 3 分钟内完成 | 通过 | Demo Day |
 
-**Interpretation rule.** S3 and S4 are *feasibility* results, not universal claims. Three
-operators showing an effect supports "detection is feasible in this setting"; it does not
-establish that it generalises, and it will not be written as if it did.
+**解释规则。** S3 与 S4 是**可行性**结果，不是普适结论。三个人身上看到效应，支持的是「这个场景下检测可行」；它不证明可推广，写的时候也不许写成可推广。
 
-## 6. Scope — What We Explicitly Do Not Do
+## 六、范围——明确不做的事
 
-- **No automatic decision.** The system never gates the operator's work and never says
-  "stop". It is a mirror, not a judge (§2).
-- **No causal claim that anomaly detection reduces errors.** That requires a controlled
-  feedback-vs-no-feedback comparison and is out of scope for this study.
-- **No induced errors.** Errors will not be manufactured in real laboratory procedures;
-  the real materials belong to an ongoing project.
-- **No cross-operator or cross-task comparison.** Person and task are perfectly
-  confounded by design (§4).
-- **No automatic state *classification* into named states** (e.g. "fatigued",
-  "overloaded"). The output is an anomaly flag located on a step, nothing more.
-- **No single fused "state score"** merging EMG and EEG (see §2).
-- **No medical or diagnostic claim.** This is not a health device and will not be
-  described as one.
-- Multi-user accounts, cloud deployment, and mobile clients are out of scope.
+- **不做自动决策。** 系统从不拦住操作者的作业，也从不判断「停」。它是镜子，不是判官（第二节）。
+- **不声称异常检测能减少失误。** 那需要「给反馈 vs 不给反馈」的对照实验，本研究范围之外。
+- **不诱导失误。** 不会在真实实验流程里人为制造错误；真实物料属于另一个在研项目。
+- **不做跨操作者、跨任务比较。** 人与任务在设计上完全混淆（第四节）。
+- **不把状态自动分类成命名状态**（如「疲劳」「过载」）。输出只是定位到某一步的异常标记，仅此而已。
+- **不把肌电与脑电融合成单一「状态分」**（见第二节）。
+- **不做医学或诊断声明。** 这不是健康设备，也不许被这样描述。
+- 多用户账号、云部署、移动端，都不在范围内。
 
-## 7. Stakeholders, Ethics, and Data Compliance
+## 七、利益相关者、伦理与数据合规
 
-| Stakeholder | Role | Status |
+| 利益相关者 | 角色 | 状态 |
 |---|---|---|
-| Research supervisor | Scientific guidance and approval of the recording protocol | Approved |
-| Operators B and C | Participants | Written informed consent obtained; data handling agreed |
-| Course teaching team | Scope and milestone approval | Solo plan pending confirmation |
-| Laboratory project team | Provides the real workflow and SOP | In place |
+| 科研导师 | 科学指导，批准采集方案 | 已批准 |
+| 操作者 B、C | 参与者 | 已签署知情同意；数据处置已约定 |
+| 课程教学团队 | 范围与里程碑确认 | 个人方案，待确认 |
+| 实验室项目组 | 提供真实流程与 SOP | 已就位 |
 
-- **Human data.** Three operators, each consenting, each recorded only during their own
-  task. Raw physiological data stays on the local machine and is not uploaded to any
-  cloud service or external tool.
-- **Privacy.** No video processing is part of this stage. Personal identifiers are kept
-  out of exported datasets; operators are referred to as A / B / C in all analysis and
-  write-ups.
-- **Withdrawal.** Any operator may withdraw and have their recordings deleted at any
-  point without giving a reason.
-- **Blocking pre-condition (must be resolved before data collection).** Surface EMG uses a
-  bipolar electrode pair, whereas the EEG montage is single-ended (referenced). Whether the
-  two can be recorded **in the same session on the same amplifier** must be confirmed
-  against the manufacturer's manual *before the protocol is frozen*. This is a **blocking**
-  item, because EMG now carries the primary objective (§2). Options, in order of
-  preference:
-  (a) both channels on the same system;
-  (b) EMG on a separate channel group or device, synchronised to the same clock;
-  (c) EMG only, with the primary objective rescoped to muscle fatigue and EEG moved to a
-  later stage. **Option (c) is a real downgrade and would be declared as one** — not
-  presented as the same study.
-- **Standing rule.** No sensitive laboratory data, unpublished results, credentials, or
-  participant information are shared with AI tools.
+- **人体数据。** 三位操作者，各自同意，各自只在自己执行任务时被记录。原始生理数据留在本地机器，不上传任何云服务或外部工具。
+- **隐私。** 本阶段不涉及任何视频处理。导出数据集不含个人标识；分析与成文中一律以 A / B / C 指代。
+- **退出。** 任何操作者可在任何时候退出，并要求删除其记录，无需给出理由。
+- **阻断性前置条件（必须在采集开始前解决）。** 表面肌电用**双极**电极对，而脑电导联是**单端（带参考）**接法。两者能否**在同一次 session、同一台放大器上**同时采集，必须在冻结协议前对照设备手册确认。这一项现在是**阻断性**的，因为肌电扛着主目标（第二节）。可选方案，按优先级：
+  (a) 同一系统上同时采两路；
+  (b) 肌电走独立通道组或独立设备，同步到同一时钟；
+  (c) 只做肌电，主目标收缩为肌肉疲劳，脑电挪到后续阶段。**方案 (c) 是实打实的降级，要作为降级明确声明**——不许包装成同一个研究。
+- **长期底线。** 不向 AI 工具提供任何敏感实验数据、未发表结果、凭据或参与者信息。
 
-## 8. Timeline and Risk Control
+## 八、时间线与风险控制
 
-| Milestone | Date | Target state |
+| 里程碑 | 日期 | 目标状态 |
 |---|---|---|
-| Stage 1 | Oct 13 | This proposal + repository link |
-| Baseline sessions | Weeks of Oct 13–26 | 6 sessions, thresholds X / Y frozen |
-| Stage 2 (MVP) | Oct 27 | Modules 1–5 working end-to-end on recorded sessions |
-| Noise block | Weeks of Oct 27–Nov 9 | 6 sessions |
-| Stage 3 (Validation) | Nov 10 | Detection results for 3/3 operators; revision plan |
-| Stage 4 (Beta) | Dec 1 | Polished UI, real-session review, reliability pass |
-| Stage 5 (Demo Day) | Dec 8 | Live end-to-end demonstration, < 3 minutes |
+| Stage 1 | 10-13 | 本提案 + 仓库链接 |
+| 基线 session | 10-13 ~ 10-26 两周 | 6 次 session，阈值 X / Y 冻结 |
+| Stage 2（MVP） | 10-27 | 模块 1–5 在已录 session 上端到端跑通 |
+| 白噪声段 | 10-27 ~ 11-09 两周 | 6 次 session |
+| Stage 3（验证） | 11-10 | 3/3 人检测结果；下一轮修订计划 |
+| Stage 4（Beta） | 12-01 | UI 打磨、真实 session 回看、可靠性过一遍 |
+| Stage 5（Demo Day） | 12-08 | 端到端现场演示，3 分钟内 |
 
-**Risks and fallbacks.**
+**风险与降级方案。**
 
-| Risk | Fallback |
+| 风险 | 降级方案 |
 |---|---|
-| EMG and EEG cannot be recorded together (**blocking**) | §7 options (a) → (b) → (c); option (c) rescopes the primary objective and is declared as a downgrade |
-| MDF decline in intermittent lab tasks too small to see within 90 minutes | Activate the §4 sustained-hold calibration; if still null, lengthen the session or raise task load — and report the null result as a null result |
-| Recording cannot be attached to real sessions in some week | Use a surrogate practice task with the same motor actions; mark the session as surrogate in the log |
-| Very few errors observed | Expected; the secondary analysis is already scoped as exploratory and does not gate any deliverable |
-| Detection performs poorly | A negative result is a valid Stage 3 outcome, reported as such; it does not block the software deliverable |
-| Session overruns available time | Sessions are already part of the weekly schedule; the protocol is capped at 90 minutes |
+| 肌电与脑电无法同采（**阻断性**） | 按第七节 (a) → (b) → (c)；方案 (c) 收缩主目标并明确声明为降级 |
+| 间歇性实验任务在 90 分钟内 MDF 下降太小、看不出来 | 启用第四节持续收缩校准；若仍为阴性，则延长 session 或加大任务负荷——并把阴性结果报为阴性结果 |
+| 某些周无法把采集挂到真实 session 上 | 用动作构成相同的替代练习任务顶上；该 session 在日志里标注为替代 |
+| 观察到的失误极少 | 属预期；次级分析本就限定为探索性，不把关任何交付物 |
+| 检测效果差 | 阴性结果是 Stage 3 的合法结果，照实报告；它不阻塞软件交付物 |
+| session 超出可用时间 | session 本就在每周日程里；协议上限 90 分钟 |
 
-## 9. Process Evidence and AI Use
+## 九、过程证据与 AI 使用
 
-- **Repository history is short.** The LabPulse repository was first created on
-  **2026-10-04**. Work before that date (initial problem framing, earlier draft documents)
-  took place outside version control and therefore has **no reproducible commit
-  timestamps**. This gap is stated here rather than papered over; it is also recorded in
-  the AI usage log.
-- **AI-assisted work is logged.** Every AI interaction that produced a change is recorded
-  with a timestamp taken from the git commit, in `AI使用日志.md`. AI is used for
-  drafting, implementation and verification; research questions, scope decisions and
-  interpretation are the author's own.
-- **Direction revision.** The project direction was revised on **2026-10-12** after a
-  design review of the original tool-only framing. Two upgrades were adopted in that
-  review: (i) **surface EMG was promoted to the primary channel** (muscle fatigue has a
-  measurable marker, cognitive state does not) with EEG kept as a complementary channel;
-  and (ii) **the SOP step list became the skeleton** of the result, so the output is
-  "which step deviated" rather than a timeline inferred from signal. The same review fixed
-  three other decisions: state-anomaly detection as the primary objective, a three-operator
-  within-subject design, a white-noise positive control, and no induced errors. This
-  supersedes the earlier proposal. Both the original framing and the reason for the change
-  are retained, as required by the course rule that every review submits *current version +
-  process evidence + next-round decision*.
+- **仓库历史很短。** LabPulse 仓库创建于 **2026-10-04**。此前的相关工作（最初的问题界定、更早的草稿文档）发生在版本控制之外，因此**没有可复现的提交时间戳**。这个缺口如实写在这里，不做粉饰；AI 使用日志里也记了同一条。
+- **AI 参与的工作有日志。** 每一次产生改动的 AI 交互都记录在 `AI使用日志.md`，时间戳取 git 提交时间。AI 用于起草、实现与校验；研究问题、范围取舍与结果解释由作者本人决定。
+- **方向修订。** 项目方向在 **2026-10-12** 经一次设计评审后修订。原始框架是「工位记录工具」，修订后改为「状态异常识别」。同一次评审采纳了两项升级：(i) **表面肌电升为主通道**（肌肉疲劳有可测标记，认知状态没有），脑电保留为辅助通道；(ii) **SOP 步骤表成为结果的骨架**，输出从「从信号里反推的时间线」变成「哪一步偏离了」。评审同时定下另外三点：主目标为状态异常识别、三人被试内设计、白噪声阳性对照、不做诱导错误。本次修订取代此前的提案。原始框架与修订原因都予保留——课程要求每次评审提交「当前版本 + 过程证据 + 下一轮决策」，修订本身就是过程证据。
 
 ---
 
-*Stage 1 submission — 2026-10-13. Pending: repository URL, LMS template check,
-solo-work confirmation.*
+*Stage 1 提交 —— 2026-10-13。待办：LMS 模板核对、个人作业确认。*
