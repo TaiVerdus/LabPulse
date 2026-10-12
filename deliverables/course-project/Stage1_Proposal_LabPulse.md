@@ -29,29 +29,50 @@ Three things are missing from the current workflow:
    real lab the operator's state is captured by nothing. The only two existing tools are
    self-report (unreliable, and it interrupts the work) and video review (accurate, but
    nobody re-watches two hours of footage to find a five-second mistake).
-3. **"Tired" has no measurement.** There is no instrument reading for fatigue. We cannot
-   put a threshold on it, and we cannot ask an operator to report it without breaking
-   their flow.
+3. **The state that matters has no single measurement.** Cognitive load and attention
+   decline have no threshold and no gold standard — and asking an operator to report them
+   breaks their flow. (Muscle fatigue is the exception: it *does* admit a measurable
+   marker, which is exactly why this project anchors on it — see §2.)
 
 The practical consequence: an operator who is heading toward an error gets no signal
 until the error has already happened.
 
 ## 2. Research Direction
 
-**We do not attempt to define or measure "tiredness".** We treat the operator's own
-baseline as the reference, and ask a narrower, answerable question:
+**LabPulse is a mirror, not a judge.** The system does not decide for the operator whether
+they are fit to continue. It shows the operator their own signal against their own
+baseline, and the operator decides. The premise of the whole project is this line:
+*we can hardly define "tired", but we can help someone notice that they are tired.*
+
+We therefore do not attempt to define or measure "tiredness" as a single construct. We
+treat the operator's own baseline as the reference and ask a narrower, answerable question:
 
 > **Can a deviation from an operator's own physiological baseline — a *state anomaly* —
-> be detected while they are still working?**
+> be detected while they are still working, and located on the SOP timeline?**
 
-This reframing is deliberate. "Fatigue" has no ground truth and no scale; "deviation from
-this person's own baseline" is a computable quantity. The purpose of detecting it is
-practical, not diagnostic: give the operator a chance to notice that something has
-shifted, and choose to pause, re-check, or restart the step — *before* the error lands in
-the data.
+**Two complementary channels, deliberately asymmetric.** Each is validated against a
+different control (§4), so neither is left to be judged against nothing:
+
+| Channel | Target | Strength | Role |
+|---|---|---|---|
+| **EMG** (surface) | Action execution + **muscle fatigue** | Muscle fatigue has a textbook marker: surface-EMG **median frequency (MDF) declines** with sustained contraction. Measurable, repeatable, and visible as a trend **within a single subject** — no gold-standard-free guessing. | **Primary** |
+| **EEG** | Cognitive load / attention | Strong at "something changed", weak at naming it: heavy artefact load, no gold standard for "cognitive load", and single-subject cognitive-state inference has no established solution. | **Complementary** |
+
+This split is the single biggest design upgrade. Cognitive state is the target we care
+about, but it is not the target we can *validate*; muscle fatigue is narrower, yet it is
+measurable. We therefore anchor the primary objective on the channel that admits a
+literature-backed marker, and carry EEG as a complementary channel reported honestly as
+exploratory.
+
+**SOP as the skeleton.** Rather than inferring the timeline from the signal, the SOP step
+list supplies it: every signal window is attached to a known step ("dilution, step 3"). The
+detector's output is therefore not an abstract "abnormal segment" but a **named,
+interpretable statement — "dilution SOP step 3 deviated"** — which is what makes the
+problem tractable and the result explainable to the operator.
 
 **Primary objective**
-Detect state anomalies, within subject, against each operator's own baseline.
+Detect state anomalies within subject, against each operator's own baseline, and locate
+them on the SOP timeline.
 
 **Secondary objective (exploratory only)**
 Observe cases in which a detected anomaly was followed by a recorded operational error.
@@ -61,13 +82,19 @@ tested causal claim** — see §6.
 **An operational definition of "state anomaly"** (fixed before data collection, so the
 detector can be judged):
 
-> A state anomaly is a period in which a derived physiological indicator departs from the
-> operator's own quiet-operation baseline by more than **X standard deviations**, and
-> stays there for at least **Y seconds**.
+> A state anomaly is a period in which a channel's indicator departs from the operator's
+> own quiet-operation baseline by more than **X standard deviations**, and stays there for
+> at least **Y seconds**.
 >
-> *X and Y are fixed after the first two baseline sessions are analysed, then frozen for
-> the rest of the study.* The sustained-duration rule exists so that a single blink or
-> movement artefact does not raise an alarm.
+> - **EMG indicator** (primary): median frequency (MDF) and amplitude (RMS) of the muscle
+>   group active in the task.
+> - **EEG indicator** (complementary): band-power ratios against that operator's own
+>   baseline. Reported separately — **never merged into one score with EMG**, because the
+>   two have different time constants and different evidence strength.
+>
+> *X and Y are fixed per channel after the first two baseline sessions are analysed, then
+> frozen for the rest of the study. The sustained-duration rule keeps a single blink or
+> movement artefact from raising an alarm.*
 
 ## 3. What We Build: LabPulse
 
@@ -76,10 +103,10 @@ account) whose job is to make the study above possible. Five modules:
 
 | # | Module | What it does |
 |---|---|---|
-| 1 | **Acquisition** | Receives live EEG/EMG from the laboratory's acquisition system and timestamps every sample against a single clock. |
-| 2 | **SOP Timeline** | Records the procedure against the task's SOP step list. Step lists are **configuration files** — one file per task (weighing / dilution / sampling) — so the same code serves all three tasks. |
+| 1 | **Acquisition** | Receives live EEG and surface EMG from the laboratory's acquisition system and timestamps every sample against a single clock. |
+| 2 | **SOP Timeline** | Records the procedure against the task's SOP step list. This step list is the **skeleton of the whole system** — it is what turns a signal into a *located* result. Step lists are **configuration files**, one per task (weighing / dilution / sampling), so the same code serves all three tasks. |
 | 3 | **Event Marking** | One-click / hotkey marking during work ("step complete", "error noticed", free labels). Both hands are occupied during dilution; anything that requires typing will simply not happen. |
-| 4 | **State Anomaly Detection** | Computes the indicator, compares it to the operator's baseline, and flags sustained deviations using the frozen X / Y rule. |
+| 4 | **State Anomaly Detection** | Computes both channels' indicators (EMG MDF/RMS primary, EEG band ratios complementary), compares each against the operator's own baseline, and flags sustained deviations using the frozen X / Y rule — **attributed to a named SOP step**. |
 | 5 | **Synchronised Review & Export** | SOP step timeline × physiological curves on one chart; click any mark to jump to the signal around it; export a structured session log as CSV. |
 
 The signal-quality check reuses the analysis core already written and validated during
@@ -105,17 +132,26 @@ and task are not separable, so **no comparison between operators or between task
 claimed** (see §6). Each operator is analysed as an independent within-subject case:
 three separate small experiments, each with its own baseline.
 
-**Positive control 1 — auditory load (white noise).**
-Because "state anomaly" has no external ground truth, we need a period in which an anomaly
-*should* occur. White noise is switched on for a fixed block: it adds exogenous load,
-requires no change to the task, and is reproducible. **This is the validation condition
-for the primary objective** — without it, the detector's output cannot be judged right or
-wrong. Fixed playlist/noise, fixed volume, same hardware for every session.
+**Each channel gets its own positive control.**
 
-**Positive control 2 — within-session time-on-task (free).**
-Sessions are a fixed 90 minutes. The first 30 minutes and the last 30 minutes are compared
-within the same session: state anomalies should be more frequent later. This costs no
-extra session and provides an ecologically valid contrast.
+**Control 1 — white noise → validates the EEG (cognitive-load) channel.**
+White noise is switched on for a fixed block: it adds exogenous load, requires no change to
+the task, and is reproducible. If the EEG channel cannot separate quiet from noise-loaded
+blocks *within the same operator*, it is not measuring anything usable. Fixed noise source,
+fixed volume, same hardware every session. (Music was rejected: its rhythm enters the EEG
+spectrum and contaminates the very band being measured.)
+
+**Control 2 — within-session time-on-task → validates the EMG (muscle-fatigue) channel.**
+Sessions are a fixed 90 minutes; the first 30 minutes and the last 30 minutes are compared
+within the same session, and sustained work should lower MDF. This is the **validation
+condition for the primary channel**, and it costs no extra session — the load is produced
+by the real work itself.
+
+**Calibration (optional, ~1 minute per session).** A brief sustained isometric hold
+(20–30 s at a self-chosen level, held as steadily as possible) recorded at the start and
+the end of each session gives a same-session, task-independent reference for MDF decline.
+It is a *relative* before/after contrast, not an absolute force measurement. Whether it is
+needed is decided after the baseline sessions — see the risk table in §8.
 
 **Protocol and data volume.**
 
@@ -143,19 +179,21 @@ as a set of documented cases, never as a correlation or a causal result.
 | # | Criterion | Target | Verified at |
 |---|---|---|---|
 | S1 | Two baseline sessions per operator completed and analysed | 3/3 operators | Week 2 |
-| S2 | X / Y thresholds fixed and documented before the noise block | frozen, written down | Week 2 |
-| S3 | White-noise blocks show a detectable shift versus that operator's own baseline | 3/3 operators | Week 4 |
-| S4 | Within-session first-vs-last-30-min contrast computed | 12/12 sessions | Week 4 |
+| S2 | X / Y thresholds fixed **per channel** and documented before the noise block | frozen, written down | Week 2 |
+| S3 | **EEG channel**: white-noise blocks show a detectable shift versus that operator's own quiet baseline | 3/3 operators | Week 4 |
+| S4 | **EMG channel (primary)**: within-session MDF trend, first 30 min vs last 30 min | computed for 12/12 sessions; decline visible in ≥2/3 operators — otherwise the §4 calibration fallback is activated, and a null result is reported as a null result | Week 4 |
 | S5 | SOP mark aligns to the signal timeline | error < 1 s | Week 1 |
 | S6 | A full session (acquire → mark → review → export) runs unassisted | 1 operator, no help | Week 4 |
 | S7 | End-to-end live demonstration completes in under 3 minutes | pass | Demo Day |
 
-**Interpretation rule.** S3 is a *feasibility* result, not a universal claim. Three
-operators showing the effect supports "detection is feasible in this setting"; it does not
+**Interpretation rule.** S3 and S4 are *feasibility* results, not universal claims. Three
+operators showing an effect supports "detection is feasible in this setting"; it does not
 establish that it generalises, and it will not be written as if it did.
 
 ## 6. Scope — What We Explicitly Do Not Do
 
+- **No automatic decision.** The system never gates the operator's work and never says
+  "stop". It is a mirror, not a judge (§2).
 - **No causal claim that anomaly detection reduces errors.** That requires a controlled
   feedback-vs-no-feedback comparison and is out of scope for this study.
 - **No induced errors.** Errors will not be manufactured in real laboratory procedures;
@@ -163,8 +201,8 @@ establish that it generalises, and it will not be written as if it did.
 - **No cross-operator or cross-task comparison.** Person and task are perfectly
   confounded by design (§4).
 - **No automatic state *classification* into named states** (e.g. "fatigued",
-  "overloaded"). The output is an anomaly flag relative to a personal baseline, nothing
-  more.
+  "overloaded"). The output is an anomaly flag located on a step, nothing more.
+- **No single fused "state score"** merging EMG and EEG (see §2).
 - **No medical or diagnostic claim.** This is not a health device and will not be
   described as one.
 - Multi-user accounts, cloud deployment, and mobile clients are out of scope.
@@ -186,12 +224,17 @@ establish that it generalises, and it will not be written as if it did.
   write-ups.
 - **Withdrawal.** Any operator may withdraw and have their recordings deleted at any
   point without giving a reason.
-- **Open pre-condition (to be resolved before data collection).** Whether EEG and EMG can
-  be recorded in the *same* session depends on the electrode configuration: surface EMG
-  uses a bipolar pair, while the EEG montage uses a single-ended (referenced) arrangement.
-  This must be confirmed against the manufacturer's manual before the protocol is frozen.
-  If they cannot be recorded together, the study proceeds on EEG alone and the state
-  indicator is derived from EEG only.
+- **Blocking pre-condition (must be resolved before data collection).** Surface EMG uses a
+  bipolar electrode pair, whereas the EEG montage is single-ended (referenced). Whether the
+  two can be recorded **in the same session on the same amplifier** must be confirmed
+  against the manufacturer's manual *before the protocol is frozen*. This is a **blocking**
+  item, because EMG now carries the primary objective (§2). Options, in order of
+  preference:
+  (a) both channels on the same system;
+  (b) EMG on a separate channel group or device, synchronised to the same clock;
+  (c) EMG only, with the primary objective rescoped to muscle fatigue and EEG moved to a
+  later stage. **Option (c) is a real downgrade and would be declared as one** — not
+  presented as the same study.
 - **Standing rule.** No sensitive laboratory data, unpublished results, credentials, or
   participant information are shared with AI tools.
 
@@ -211,7 +254,8 @@ establish that it generalises, and it will not be written as if it did.
 
 | Risk | Fallback |
 |---|---|
-| EEG and EMG cannot be recorded together | Proceed on EEG only (see §7); the anomaly rule is unchanged |
+| EMG and EEG cannot be recorded together (**blocking**) | §7 options (a) → (b) → (c); option (c) rescopes the primary objective and is declared as a downgrade |
+| MDF decline in intermittent lab tasks too small to see within 90 minutes | Activate the §4 sustained-hold calibration; if still null, lengthen the session or raise task load — and report the null result as a null result |
 | Recording cannot be attached to real sessions in some week | Use a surrogate practice task with the same motor actions; mark the session as surrogate in the log |
 | Very few errors observed | Expected; the secondary analysis is already scoped as exploratory and does not gate any deliverable |
 | Detection performs poorly | A negative result is a valid Stage 3 outcome, reported as such; it does not block the software deliverable |
@@ -229,11 +273,16 @@ establish that it generalises, and it will not be written as if it did.
   drafting, implementation and verification; research questions, scope decisions and
   interpretation are the author's own.
 - **Direction revision.** The project direction was revised on **2026-10-12** after a
-  design review of the original tool-only framing. The revision (state-anomaly detection
-  as the primary objective; three-operator within-subject design; white-noise positive
-  control; no induced errors) supersedes the earlier proposal. Both the original framing
-  and the reason for the change are recorded, as required by the course rule that every
-  review submits *current version + process evidence + next-round decision*.
+  design review of the original tool-only framing. Two upgrades were adopted in that
+  review: (i) **surface EMG was promoted to the primary channel** (muscle fatigue has a
+  measurable marker, cognitive state does not) with EEG kept as a complementary channel;
+  and (ii) **the SOP step list became the skeleton** of the result, so the output is
+  "which step deviated" rather than a timeline inferred from signal. The same review fixed
+  three other decisions: state-anomaly detection as the primary objective, a three-operator
+  within-subject design, a white-noise positive control, and no induced errors. This
+  supersedes the earlier proposal. Both the original framing and the reason for the change
+  are retained, as required by the course rule that every review submits *current version +
+  process evidence + next-round decision*.
 
 ---
 
