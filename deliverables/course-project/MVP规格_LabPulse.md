@@ -4,7 +4,7 @@
 **作者：王释贤 ｜ 里程碑：Stage 2（10-27）｜ 依据：`Stage1_Proposal_LabPulse.md` 定稿**
 
 > 本规格是 **Stage 1 定稿的技术展开**，不是新方向。凡是与 Stage 1 冲突的地方，以 Stage 1 为准。
-> 通道主辅分工已按定稿：**脑电 EEG 为主通道，表面肌电 EMG 为辅通道**。
+> 通道分工：**脑电 EEG 为主通道（MVP 只做这条）**；表面肌电 EMG 为辅通道，**推迟到后续阶段**（Stage 4 前后），不占 MVP 工期。
 
 ---
 
@@ -14,7 +14,7 @@ Stage 2 的判定口径（Stage 1 第八节）只有一句：
 
 > **模块 1–5 在「已经录好的 session」上端到端跑通一次。**
 
-所以 MVP **不接实时设备**，不需要设备到货，不需要 LSL。它证明的是**软件链路成立**：给定一段录好的脑电（+ 可选肌电）和一张 SOP 步骤表，系统能把信号变成一句「稀释 SOP 第 3 步偏离了」。
+所以 MVP **不接实时设备**，不需要设备到货，不需要 LSL，**也不需要肌电**。它证明的是**软件链路成立**：给定一段录好的脑电和一张 SOP 步骤表，系统能把信号变成一句「稀释 SOP 第 3 步偏离了」。
 
 **MVP 要证明的三件事**
 
@@ -22,13 +22,14 @@ Stage 2 的判定口径（Stage 1 第八节）只有一句：
 |---|---|---|
 | P1 | 时间对齐成立：人打的 SOP 标记与连续信号对得上 | 错位 < 1 秒（第 6 节，可跑的自检） |
 | P2 | 检测器真的在算东西：能识别出「相对本人基线的持续偏离」，并归因到某一步 | 合成数据自检 + 一次真实 session（第 8 节 T1/T3） |
-| P3 | 检测不依赖肌电：只剩脑电时全链路照样跑通 | 单通道降级自检（第 8 节 T4） |
+| P3 | 交付物**只依赖脑电**：肌电缺席是默认情形，不是降级 | 第 8 节 T4（无肌电字段的输入全链路跑通，导出无空列） |
 
 **明确不做**（继承 Stage 1 第六节）
 
 - ❌ 不做自动决策、不判断「该停」、不拦作业 → 它是镜子，不是判官
-- ❌ 不把 theta/alpha 或 MDF 翻译成命名状态（「疲劳」「过载」）→ 输出只有「第几步、哪个指标、往哪偏」
+- ❌ 不把 theta/alpha 翻译成命名状态（「疲劳」「过载」）→ 输出只有「第几步、哪个指标、往哪偏」
 - ❌ 不把两条通道融合成单一「状态分」
+- ⏸ **MVP 不做肌电**：辅通道推迟到后续阶段（Stage 4 前后）。主目标只依赖脑电，所以这不影响任何 MVP 交付物；但在肌电真正跑通之前，本项目**不声称有两条通道**
 - ❌ 不做实时 LSL 采集、不做医学声明、不做账号 / 云部署 / 移动端
 - ❌ 不诱导失误、不碰真实物料
 
@@ -88,9 +89,9 @@ os.environ.setdefault("_MNE_FAKE_HOME_DIR", r"D:\Notes\EEG\LabPulse\.tmp\mne_hom
 
 | 项 | 规格 |
 |---|---|
-| 输入 | 脑电：`.edf` / `.bdf` / `.fif`；肌电：`.csv`（时间列 + 通道列）或与脑电同文件 |
+| 输入 | **脑电：`.edf` / `.bdf` / `.fif`**。肌电（`.csv`，时间列 + 通道列）在后续阶段加入，MVP 不实现 |
 | 输出 | 内存中的 `Raw`（统一到 μV + 统一采样率元信息）+ `session.json` 里的通道映射与起始时刻 |
-| 必须做到 | ① 读取通道数与采样率并与标称值核对；② 建立**墙钟 t0**（该段第一个采样点对应的真实时刻）；③ 通道映射（哪一路是哪个电极位）写成显式配置，不靠猜；④ 肌电缺失时**不报错**，标记 `emg: absent` 后继续 |
+| 必须做到 | ① 读取通道数与采样率并与标称值核对；② 建立**墙钟 t0**（该段第一个采样点对应的真实时刻）；③ 通道映射（哪一路是哪个电极位）写成显式配置，不靠猜；④ 只处理脑电：`session.json` 里**不写 EMG 字段**，界面与导出不出现肌电占位 |
 | 不做 | 实时 LSL 接收、设备握手、阻抗检测（都属扩展模块） |
 | 验收 | 导入同一个文件两次，得到的 `t0` 与通道数完全一致 |
 
@@ -119,10 +120,10 @@ os.environ.setdefault("_MNE_FAKE_HOME_DIR", r"D:\Notes\EEG\LabPulse\.tmp\mne_hom
 | 输入 | 模块 1 的信号 + 模块 2 的步骤时间线 + 该操作者的基线文件 |
 | 输出 | `windows.csv`：每个窗口一行，含指标值、z 分数、是否报警、归因的 **步骤 id** |
 | 主通道（脑电） | **theta / alpha 功率比**为主指标，**双侧**判定；delta / alpha / beta 相对本人基线的偏离**分别报告**（只报不报警） |
-| 辅通道（肌电） | **MDF**（中值频率）与 **RMS**；MDF 单侧判定（下降为异常方向），RMS 只报告 |
+| 辅通道（肌电） | **后续阶段**：MDF（中值频率，下降为异常方向）与 RMS。MVP 不实现 |
 | 判定规则 | `|z| > X` 且**持续 ≥ Y 秒**才报警；`z` 相对**该操作者自己的基线**（不是绝对阈值，不是别人） |
 | 窗口 | 指标窗 30 秒、步进 5 秒（滑动窗）。持续判定按 5 秒步进累计 → Y 能精确到 5 秒，不被 30 秒窗粗糙化 |
-| 两条通道 | **各自独立判定、分别报告，绝不融合成一个分数**；不做自动决策，不命名状态 |
+| 各通道 | **各自独立判定、分别报告，绝不融合成一个分数**；不做自动决策，不命名状态。肌电加入后同样适用 |
 | 阈值 | X / Y **按通道**存在 `config/thresholds.json`，前两次基线 session 分析后定下并**冻结**（见第 5 节） |
 | 质量闸门 | 报警前先过质量：`quality_ok == false` 的窗口只报「不判定」，不算异常也不算正常 |
 
@@ -131,7 +132,7 @@ os.environ.setdefault("_MNE_FAKE_HOME_DIR", r"D:\Notes\EEG\LabPulse\.tmp\mne_hom
 | 项 | 规格 |
 |---|---|
 | 输入 | `windows.csv` + `events.csv` + 质量结果 |
-| 输出 | ① 同图叠画：SOP 步骤色块条 × 脑电 theta/alpha 曲线（+ 肌电 MDF 第二条）；② 结构化导出 `export.csv` |
+| 输出 | ① 同图叠画：SOP 步骤色块条 × 脑电 theta/alpha 曲线；② 结构化导出 `export.csv` |
 | 必须做到 | 点任一事件标记或任一报警点，**图跳到对应信号区间**；导出**不含个人标识**（只有 A / B / C 代号） |
 | 验收 | 一次 session 的导出文件能被 pandas 直接读回、行列数与界面一致 |
 
@@ -144,7 +145,7 @@ os.environ.setdefault("_MNE_FAKE_HOME_DIR", r"D:\Notes\EEG\LabPulse\.tmp\mne_hom
 ```
 sessions/
   2026-10-15_B_dilution_01/
-    raw/            eeg_*.edf | emg_*.csv
+    raw/            eeg_*.edf
     session.json    元数据（操作者、任务、t0、通道映射、采样率）
     sop.json        该次实际使用的步骤表副本（冻结）
     events.csv      打标事件
@@ -168,12 +169,12 @@ sop/
   "t0_iso": "2026-10-15T14:03:11+08:00",
   "t0_source": "edf_header | manual | device_clock",
   "eeg": { "file": "raw/eeg_01.edf", "sfreq": 250, "channels": ["Fz","Cz","Pz","..."] },
-  "emg": { "file": "raw/emg_01.csv", "sfreq": 1000, "channels": ["FDS","EDC"] },
   "notes": ""
 }
 ```
 
 `t0_source` 必须如实填——**手动对表就说手动对表**，不许伪装成设备时钟。
+肌电字段（`emg`）在后续阶段加入，MVP 不写。
 
 ### 4.3 `events.csv`
 
@@ -188,12 +189,13 @@ t_iso,t_rel_s,kind,step_id,label
 ### 4.4 `windows.csv`
 
 ```
-t_start_s,t_end_s,step_id,eeg_ta,z_ta,flag_ta,emg_mdf,emg_rms,z_mdf,flag_mdf,quality_ok
-15.0,45.0,dilute.s1,1.42,0.31,0,,,,1
-120.0,150.0,dilute.s2,2.87,2.41,1,88.2,41.0,-1.9,0,1
+t_start_s,t_end_s,step_id,eeg_ta,z_ta,flag_ta,quality_ok
+15.0,45.0,dilute.s1,1.42,0.31,0,1
+120.0,150.0,dilute.s2,2.87,2.41,1,1
 ```
 
-`flag_*` 已是「持续 ≥ Y 秒」之后的最终结论，不是单窗原始判定；单窗原始判定另存 `z_*`，便于事后复核。
+`flag_ta` 已是「持续 ≥ Y 秒」之后的最终结论，不是单窗原始判定；单窗原始判定另存 `z_ta`，便于事后复核。
+肌电列（`emg_mdf` / `emg_rms` / `z_mdf` / `flag_mdf`）在后续阶段追加；按列名读取，追加列不破坏已有读者。
 
 ### 4.5 `sop/<task>.json`
 
@@ -215,7 +217,7 @@ t_start_s,t_end_s,step_id,eeg_ta,z_ta,flag_ta,emg_mdf,emg_rms,z_mdf,flag_mdf,qua
 ## 5. 基线与阈值（这条决定结果能不能被评判）
 
 1. **基线 = 该操作者本人的安静作业 session**（每人 2 次，Stage 1 第四节）。基线算 mean / sd，写入 `baselines/<operator>.json`。
-2. 阈值 X / Y 在**前两次基线 session 分析后**定下，写入 `config/thresholds.json`：
+2. 阈值 X / Y 在**前两次基线 session 分析后**定下，写入 `config/thresholds.json`（MVP 只有脑电一条；肌电阈值在引入时另立条目）：
 
 ```json
 {
@@ -223,8 +225,7 @@ t_start_s,t_end_s,step_id,eeg_ta,z_ta,flag_ta,emg_mdf,emg_rms,z_mdf,flag_mdf,qua
   "frozen_at": "2026-10-26T21:00:00+08:00",
   "frozen_commit": "<git hash>",
   "channels": {
-    "eeg_theta_alpha": { "X": 2.0, "Y": 30, "direction": "both" },
-    "emg_mdf":         { "X": 2.0, "Y": 30, "direction": "down" }
+    "eeg_theta_alpha": { "X": 2.0, "Y": 30, "direction": "both" }
   }
 }
 ```
@@ -277,7 +278,7 @@ t_start_s,t_end_s,step_id,eeg_ta,z_ta,flag_ta,emg_mdf,emg_rms,z_mdf,flag_mdf,qua
 | T1 | 检测器合成数据自检 | `python scripts/selftest_detector.py` | 构造一段「前 60s 正常 + 后 60s 注入已知 theta/alpha 偏移」的合成信号，检测器必须在注入段给出 `flag_ta=1` 且归因到正确步骤；正常段无报警。**这是唯一能证明检测器真的在算东西的测试** |
 | T2 | 对齐自检 | `python scripts/selftest_alignment.py` | 注入标记读回误差 < 1 个采样间隔 |
 | T3 | 真实 session 端到端 | 双击 `scripts\run_app.bat` → 导入 → 走 SOP → 打标 → 检测 → 回看 → 导出 | 全程无他人协助，导出 `export.csv` 能被 pandas 读回 |
-| T4 | **单通道降级**（肌电缺席） | 同 T3，但 `emg: absent` | 主目标链路完整跑通；界面明确显示「肌电通道缺失，仅脑电」 |
+| T4 | **无肌电输入**（默认情形） | 同 T3，用不含任何肌电字段的输入 | 全链路跑通；`windows.csv` 与导出**不出现肌电列**、界面不出现肌电占位（不许假装有第二条通道） |
 | T5 | 复用无漂移 | `python scripts/check_reuse.py` | 同一文件，走内核 CLI 与走 app 质量闸门，**逐通道噪声底一致**（证明没偷偷复制一份算法） |
 | T6 | 阈值冻结 | `python scripts/check_thresholds_frozen.py` | 基线 session 分析完后 `frozen=true`；若为 false 则检测器拒绝出报警（只出 z 分数） |
 
@@ -302,7 +303,8 @@ t_start_s,t_end_s,step_id,eeg_ta,z_ta,flag_ta,emg_mdf,emg_rms,z_mdf,flag_mdf,qua
 | 10-13 ~ 10-26 | 基线 6 次 session 录完，阈值 X / Y 定下并冻结（第 5 节） |
 | **10-27** | **模块 1–5 在已录 session 上端到端跑通；T1–T6 全绿** |
 | 10-27 ~ 11-09 | 白噪声段 6 次 session（验主通道） |
-| 11-10 | Stage 3：3/3 人检测结果 + 下一轮决策 |
+| 11-10 | Stage 3：3/3 人**脑电**检测结果 + 下一轮决策 |
+| 12-01 | Stage 4：条件允许则引入肌电辅通道；否则保持单模态并如实声明（**本规格不含肌电实现**） |
 
 ---
 
@@ -310,7 +312,7 @@ t_start_s,t_end_s,step_id,eeg_ta,z_ta,flag_ta,emg_mdf,emg_rms,z_mdf,flag_mdf,qua
 
 | 风险 | 降级方案 |
 |---|---|
-| 肌电与脑电无法同采（**阻断性**，Stage 1 第七节） | **主目标不受影响**：模块 1 与 T4 从第一天就按「只有脑电」设计。砍掉辅通道必须明确声明为降级，**不许包装成两条通道都跑了** |
+| 肌电与脑电无法同采 | **已不在关键路径上**：MVP 与 Stage 3 不使用肌电，该问题推迟到肌电引入时再解决（Stage 1 第七节已改为非阻断）。届时若确实无法同采，就保持单模态并如实声明，**不许包装成两条通道都跑了** |
 | `pip install pandas streamlit` 装不上 / venv 被重建 | `requirements.txt` + 一条重建命令写进 `scripts/README.md`；venv 是 harness 托管的，重建是有可能的，所以要能一键恢复 |
 | 到 10-27 一次真实 session 都没录成 | T1/T2/T5/T6 **全部不依赖真实数据**，用合成数据交付软件证据；演示改用动作构成相同的替代练习任务，并在日志里标注「替代」 |
 | 真实湿实验伪迹太大，安静段与噪声段分不开 | 先用质量闸门剔除坏段；再用**同一 session 内的相对对比**（伪迹对两段同等，差分后存活）。仍不可分则按 Stage 1 第五节声明主目标未成立，**如实报阴性** |
@@ -318,4 +320,5 @@ t_start_s,t_end_s,step_id,eeg_ta,z_ta,flag_ta,emg_mdf,emg_rms,z_mdf,flag_mdf,qua
 
 ---
 
-*规格版本 v1 —— 2026-10-12。继承 `Stage1_Proposal_LabPulse.md`（EEG 主 / EMG 辅）；本文件只展开实现，不改方向。*
+*规格版本 v1.1 —— 2026-10-13。继承 `Stage1_Proposal_LabPulse.md`；本文件只展开实现，不改方向。*
+*v1.1 变更：**肌电辅通道推迟到后续阶段，MVP 与全部验收项只依赖脑电**（对应 Stage 1 第九节第三次修订）。*
