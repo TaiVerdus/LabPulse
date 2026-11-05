@@ -1,0 +1,188 @@
+{
+  "mode": "public_data_offline_replay",
+  "config": {
+    "band_hz": [
+      1.0,
+      10.0
+    ],
+    "filter_order": 2,
+    "epoch_seconds": [
+      -0.2,
+      0.8
+    ],
+    "feature_seconds": [
+      0.2,
+      0.6
+    ],
+    "bins": 8,
+    "peak_to_peak_uv": 200.0,
+    "threshold": 0.5,
+    "seed": 20261105,
+    "eog_excluded": true,
+    "description": "Fixed exploratory parameters, not optimized or physiological proof"
+  },
+  "sources": [
+    {
+      "subject": "s02",
+      "sfreq": 256.0,
+      "channels_total": 30,
+      "eeg_channels": [
+        "Fp1",
+        "Fz",
+        "F3",
+        "F7",
+        "FC5",
+        "FC1",
+        "C3",
+        "T7",
+        "CP5",
+        "CP1",
+        "Pz",
+        "P3",
+        "P7",
+        "O1",
+        "O2",
+        "P4",
+        "P8",
+        "CP6",
+        "CP2",
+        "Cz",
+        "C4",
+        "T8",
+        "FC6",
+        "FC2",
+        "F4",
+        "F8",
+        "Fp2"
+      ],
+      "duration_s": 1756.0,
+      "trials": 500,
+      "accepted": 466,
+      "exclusions": {
+        "amplitude_artifact": 14,
+        "human_error": 20
+      },
+      "set_sha256": "e1c25663191a902cd909c9f35dbe1d7dbd4f5365c1bfb21d71d74757499beaef",
+      "fdt_sha256": "76670a6af9434f0822655df6f727c0bc7f99dc35852bb7a61b5403b5af237075"
+    },
+    {
+      "subject": "s03",
+      "sfreq": 256.0,
+      "channels_total": 30,
+      "eeg_channels": [
+        "Fp1",
+        "Fz",
+        "F3",
+        "F7",
+        "FC5",
+        "FC1",
+        "C3",
+        "T7",
+        "CP5",
+        "CP1",
+        "Pz",
+        "P3",
+        "P7",
+        "O1",
+        "O2",
+        "P4",
+        "P8",
+        "CP6",
+        "CP2",
+        "Cz",
+        "C4",
+        "T8",
+        "FC6",
+        "FC2",
+        "F4",
+        "F8",
+        "Fp2"
+      ],
+      "duration_s": 1757.203125,
+      "trials": 500,
+      "accepted": 382,
+      "exclusions": {
+        "amplitude_artifact": 107,
+        "human_error": 11
+      },
+      "set_sha256": "f0f9ee40c934853c68639de5654a70ffcf97988e1847a661f2df163fea5b7ccb",
+      "fdt_sha256": "d6d93630fef6e2043193626205d58c5f2dbdbfd1e8d67dc9cadc0355b2ac02ab"
+    }
+  ],
+  "split": {
+    "train_original_trial_ids": "s02 0..299",
+    "gap_unused": "s02 300..349",
+    "test_original_trial_ids": "s02 350..499",
+    "train_n": 286,
+    "gap_n": 48
+  },
+  "results": {
+    "s02_late_holdout": {
+      "n": 132,
+      "class_counts": {
+        "correct": 97,
+        "machine_error": 35
+      },
+      "confusion_matrix_true_rows_pred_columns": [
+        [
+          88,
+          9
+        ],
+        [
+          19,
+          16
+        ]
+      ],
+      "balanced_accuracy": 0.682179675994109,
+      "error_recall": 0.45714285714285713,
+      "normal_false_alarm_rate": 0.09278350515463918,
+      "roc_auc": 0.7811487481590575,
+      "majority_class_accuracy": 0.7348484848484849,
+      "constant_classifier_balanced_accuracy": 0.5,
+      "label_shuffle_reference_95pct": [
+        0.4294550810014728,
+        0.5655375552282769
+      ]
+    },
+    "s03_cross_person_holdout": {
+      "n": 382,
+      "class_counts": {
+        "correct": 258,
+        "machine_error": 124
+      },
+      "confusion_matrix_true_rows_pred_columns": [
+        [
+          216,
+          42
+        ],
+        [
+          92,
+          32
+        ]
+      ],
+      "balanced_accuracy": 0.5476369092273068,
+      "error_recall": 0.25806451612903225,
+      "normal_false_alarm_rate": 0.16279069767441862,
+      "roc_auc": 0.5558577144286072,
+      "majority_class_accuracy": 0.675392670157068,
+      "constant_classifier_balanced_accuracy": 0.5,
+      "label_shuffle_reference_95pct": [
+        0.46405351337834455,
+        0.5416666666666667
+      ]
+    }
+  },
+  "environment": {
+    "python": "3.13.9",
+    "numpy": "2.3.5",
+    "scipy": "1.16.3",
+    "sklearn": "1.7.2"
+  },
+  "limitations": [
+    "Public archived data, no device or synchronization validation",
+    "Two subjects only; no tuning or population inference",
+    "Color feedback and return motion may confound labels; not proof of ErrP specificity",
+    "Existing reference/downsampling and acquisition delay are inherited",
+    "Posterior scores are not calibrated personal probabilities; artifacts may remain"
+  ]
+}

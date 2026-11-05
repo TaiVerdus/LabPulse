@@ -1,0 +1,14 @@
+{
+  "python": "3.13.9",
+  "modules": {
+    "numpy": "2.3.5",
+    "scipy": "1.16.3",
+    "sklearn": "1.7.2",
+    "joblib": "1.5.2",
+    "pylsl": "1.18.6",
+    "threadpoolctl": "3.7.0"
+  },
+  "device_verified": false,
+  "data_present": true,
+  "status": "dependencies_ready"
+}

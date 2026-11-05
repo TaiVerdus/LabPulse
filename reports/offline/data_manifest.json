@@ -1,0 +1,32 @@
+[
+  {
+    "file": "s02_robot.set",
+    "source": "https://raw.githubusercontent.com/stefan-ehrlich/dataset-ErrP-HRI/4bc3e52469934aa0551a2261a6e4e899d156c28f/robot/s02_robot.set",
+    "bytes": 5514600,
+    "sha256": "e1c25663191a902cd909c9f35dbe1d7dbd4f5365c1bfb21d71d74757499beaef"
+  },
+  {
+    "file": "s02_robot.fdt",
+    "source": "https://raw.githubusercontent.com/stefan-ehrlich/dataset-ErrP-HRI/4bc3e52469934aa0551a2261a6e4e899d156c28f/robot/s02_robot.fdt",
+    "bytes": 53944320,
+    "sha256": "76670a6af9434f0822655df6f727c0bc7f99dc35852bb7a61b5403b5af237075"
+  },
+  {
+    "file": "s03_robot.set",
+    "source": "https://raw.githubusercontent.com/stefan-ehrlich/dataset-ErrP-HRI/4bc3e52469934aa0551a2261a6e4e899d156c28f/robot/s03_robot.set",
+    "bytes": 5516936,
+    "sha256": "f0f9ee40c934853c68639de5654a70ffcf97988e1847a661f2df163fea5b7ccb"
+  },
+  {
+    "file": "s03_robot.fdt",
+    "source": "https://raw.githubusercontent.com/stefan-ehrlich/dataset-ErrP-HRI/4bc3e52469934aa0551a2261a6e4e899d156c28f/robot/s03_robot.fdt",
+    "bytes": 53981280,
+    "sha256": "d6d93630fef6e2043193626205d58c5f2dbdbfd1e8d67dc9cadc0355b2ac02ab"
+  },
+  {
+    "file": "documentation.pdf",
+    "source": "https://raw.githubusercontent.com/stefan-ehrlich/dataset-ErrP-HRI/4bc3e52469934aa0551a2261a6e4e899d156c28f/documentation_dataset-ErrP-HRI.pdf",
+    "bytes": 666049,
+    "sha256": "d76858f559d959e13f4fb617fbbf6d76fe3640bba1db123e388572dd7b893a93"
+  }
+]

@@ -1,0 +1,15 @@
+{
+  "mode": "simulation",
+  "samples": 5034,
+  "nominal_rate": 1000.0,
+  "observed_rate": 999.9888636334697,
+  "markers": 4,
+  "nonmonotonic_intervals": 0,
+  "gap_intervals_gt_3x_nominal": 0,
+  "timestamp_median_interval_ms": 1.0000000474974513,
+  "status": "captured",
+  "physical_sync": "not_measured",
+  "loss_count": "unknown_without_device_sequence_counter",
+  "note": "Clock-corrected LSL timestamps preserved; gap heuristic is not proof of no packet loss",
+  "software_selftest_passed": true
+}

@@ -1,0 +1,8 @@
+[
+  {
+    "file": "baseline.joblib",
+    "local_only": true,
+    "rebuild": "python -m offline.pipeline",
+    "sha256": "81000dc580e1648566265e5e42c8e2815c831ab2470ccab320c45e85d1524cf6"
+  }
+]

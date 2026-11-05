@@ -1,0 +1,32 @@
+[
+  {
+    "file": "joblib-1.5.2-py3-none-any.whl",
+    "bytes": 308396,
+    "sha256": "4e1f0bdbb987e6d843c70cf43714cb276623def372df3c22fe5266b2670bc241"
+  },
+  {
+    "file": "numpy-2.3.5-cp313-cp313-win_amd64.whl",
+    "bytes": 12779090,
+    "sha256": "00dc4e846108a382c5869e77c6ed514394bdeb3403461d25a829711041217d5b"
+  },
+  {
+    "file": "pylsl-1.18.6-py3-none-win_amd64.whl",
+    "bytes": 340339,
+    "sha256": "2ea0d831cc38653a2fc69a6242ffeb2315b82ab31719c255330afe3d6b7421dc"
+  },
+  {
+    "file": "scikit_learn-1.7.2-cp313-cp313-win_amd64.whl",
+    "bytes": 8702057,
+    "sha256": "63a9afd6f7b229aad94618c01c252ce9e6fa97918c5ca19c9a17a087d819440c"
+  },
+  {
+    "file": "scipy-1.16.3-cp313-cp313-win_amd64.whl",
+    "bytes": 38529877,
+    "sha256": "062246acacbe9f8210de8e751b16fc37458213f124bef161a5a02c7a39284304"
+  },
+  {
+    "file": "threadpoolctl-3.7.0-py3-none-any.whl",
+    "bytes": 26362,
+    "sha256": "cd8b60b5641b45c67bbf73c64c843235fc2d8a480c87389f52f5dbee893b86be"
+  }
+]

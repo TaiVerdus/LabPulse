@@ -1,0 +1,13 @@
+{
+  "date": "2026-11-05",
+  "unit_tests_passed": 7,
+  "actual_bat_entry": "scripts/run_offline.bat",
+  "bat_entry_exit_code": 0,
+  "dependency_restore": "clean venv without system-site-packages, pip --no-index --find-links wheelhouse",
+  "clean_rebuild_metrics_identical": true,
+  "html_javascript_syntax": "node --check passed",
+  "screen_practice": "schedule/dry-run only; GUI not manually validated",
+  "physical_device": "not present; unverified",
+  "lsl_simulation": "see lsl_simulation.json",
+  "data": "public archive only"
+}
