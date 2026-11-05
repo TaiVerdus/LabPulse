@@ -2,7 +2,14 @@
 
 资料核对：2026-11-05｜对应 FR-01、FR-02｜实机尚未验证
 
-在 B 站检索到《脑机接口教程2：OpenBCI GUI使用-各个控件介绍、专注度检测》的索引，部分结果显示作者为探脑科技。未能读取视频正文或字幕，不能将以下步骤归为视频内容。也检索到同系列设备的《8-32通道可扩展脑电采集设备〈ExpandableBCI〉初步介绍》转载页面；未核实原视频。
+用户提供了以下四条 B 站直链。本次访问未能读取视频正文或字幕，公开信息接口返回 HTTP 412。下表中的关注点按标题和项目需求整理；后面的操作步骤来自设备说明书和 OpenBCI 官方文档。
+
+| 视频 | 后续重点核对 |
+|---|---|
+| [教程 1：OpenBCI GUI 使用简介](https://www.bilibili.com/video/BV1zNoRBoEce/) | 设备选项、会话启动和录制文件位置 |
+| [教程 2：OpenBCI GUI 控件介绍、专注度检测](https://www.bilibili.com/video/BV1mKo9BMEGC/) | Networking、Marker、Packet Loss 是否出现及其设置；专注度指标不用于 ErrP |
+| [教程 5：湿电极使用指导及 SSVEP 实验](https://www.bilibili.com/video/BV1n89DBVEuC/) | 湿电极佩戴与接触质量；SSVEP 范式不用于 ErrP |
+| [一个脑机接口设备三种通信方式](https://www.bilibili.com/video/BV17u9iBhEAs/) | 核对通信模式、是否保留外网、16 通道实际输出率；模式名称和配置以说明书与实机为准 |
 
 | 核对项 | 资料支持 | 现场如何检查 |
 |---|---|---|
