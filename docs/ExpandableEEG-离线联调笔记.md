@@ -2,14 +2,14 @@
 
 资料核对：2026-11-05｜对应 FR-01、FR-02｜实机尚未验证
 
-用户提供了以下四条 B 站直链。本次访问未能读取视频正文或字幕，公开信息接口返回 HTTP 412。下表中的关注点按标题和项目需求整理；后面的操作步骤来自设备说明书和 OpenBCI 官方文档。
+复查已从四条 B 站原页面读到标题、简介和时长，四条均由探脑科技发布。页面数据未列出字幕，本次未能验证播放或获取字幕。下表将已核实的页面信息和后续核对项分开；后面的操作步骤来自设备说明书和 OpenBCI 官方文档。
 
-| 视频 | 后续重点核对 |
-|---|---|
-| [教程 1：OpenBCI GUI 使用简介](https://www.bilibili.com/video/BV1zNoRBoEce/) | 设备选项、会话启动和录制文件位置 |
-| [教程 2：OpenBCI GUI 控件介绍、专注度检测](https://www.bilibili.com/video/BV1mKo9BMEGC/) | Networking、Marker、Packet Loss 是否出现及其设置；专注度指标不用于 ErrP |
-| [教程 5：湿电极使用指导及 SSVEP 实验](https://www.bilibili.com/video/BV1n89DBVEuC/) | 湿电极佩戴与接触质量；SSVEP 范式不用于 ErrP |
-| [一个脑机接口设备三种通信方式](https://www.bilibili.com/video/BV17u9iBhEAs/) | 核对通信模式、是否保留外网、16 通道实际输出率；模式名称和配置以说明书与实机为准 |
+| 视频 | 页面已核实 | 后续重点核对 |
+|---|---|---|
+| [教程 1：OpenBCI GUI 使用简介](https://www.bilibili.com/video/BV1zNoRBoEce/) | 1:53；ExpandableBCI 搭配干电极，介绍基本 GUI 操作 | 设备选项、会话启动和录制文件位置 |
+| [教程 2：OpenBCI GUI 控件介绍、专注度检测](https://www.bilibili.com/video/BV1mKo9BMEGC/) | 9:34；简介明确列出控件说明与数据传输 | Networking、Marker、Packet Loss 是否出现及其设置；专注度指标不用于 ErrP |
+| [教程 5：湿电极使用指导及 SSVEP 实验](https://www.bilibili.com/video/BV1n89DBVEuC/) | 8:12；简介确认使用 ExpandableBCI | 湿电极佩戴与接触质量；SSVEP 范式不用于 ErrP |
+| [一个脑机接口设备三种通信方式](https://www.bilibili.com/video/BV17u9iBhEAs/) | 5:11；简介未列出模式名称或配置 | 核对通信模式、是否保留外网、16 通道实际输出率；模式名称和配置以说明书与实机为准 |
 
 | 核对项 | 资料支持 | 现场如何检查 |
 |---|---|---|
